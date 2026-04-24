@@ -1,0 +1,16 @@
+:root {
+  --primary: #6a11cb;
+  --secondary: #ff6a88;
+
+  --gold: #ffd700;
+  --green: #00cc99;
+
+  --text-light: #ffffff;
+  --text-dark: #222;
+
+  --glass: rgba(255, 255, 255, 0.12);
+  --border: rgba(255, 255, 255, 0.2);
+
+  --radius: 16px;
+  --shadow: 0 8px 32px rgba(0,0,0,0.2);
+}

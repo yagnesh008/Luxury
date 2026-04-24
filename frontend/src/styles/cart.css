@@ -1,0 +1,47 @@
+.cart-container {
+  padding: 40px 20px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.cart-item {
+  width: 500px;
+  max-width: 90%;
+
+  margin: 12px 0;
+  padding: 20px;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  border-radius: var(--radius);
+
+  background: var(--glass);
+  backdrop-filter: blur(15px);
+
+  transition: 0.3s;
+}
+
+.cart-item:hover {
+  transform: scale(1.02);
+}
+
+.qty-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.total {
+  margin-top: 20px;
+  font-size: 24px;
+  font-weight: bold;
+
+  background: linear-gradient(to right, #00ffff, #00cce0);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}

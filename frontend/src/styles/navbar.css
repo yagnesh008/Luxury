@@ -1,0 +1,20 @@
+.navbar {
+  padding: 15px 40px;
+  height: auto;
+  display: flex;
+  justify-content: space-between;
+  text-align: center;
+  background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(15px);
+}
+
+.navbar h2 {
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.nav-right {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
