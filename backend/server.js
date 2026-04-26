@@ -8,6 +8,8 @@ const app = express();
 // ✅ FORCE CORS (no restrictions for now)
 app.use(cors());
 
+app.use(express.json());
+
 // ✅ HANDLE PREFLIGHT EXPLICITLY (CRITICAL)
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");

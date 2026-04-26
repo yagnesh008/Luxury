@@ -1,6 +1,10 @@
 const router = require("express").Router();
 const pool = require("../config/db");
 
+// ✅ BASE URL (for images)
+const BASE_URL =
+  process.env.BASE_URL || "https://luxury-1.onrender.com";
+
 // ✅ ADD TO CART
 router.post("/add", async (req, res) => {
   try {
@@ -13,12 +17,12 @@ router.post("/add", async (req, res) => {
 
     res.json("Added to cart 💎");
   } catch (err) {
-    console.error("CART ADD ERROR ❌", err);
-    res.status(500).json(err.message);
+    console.error("CART ADD ERROR ❌", err.message);
+    res.status(500).json({ error: err.message });
   }
 });
 
-// ✅ GET CART (POSTGRES FIXED)
+// ✅ GET CART
 router.get("/:user_id", async (req, res) => {
   try {
     const result = await pool.query(
@@ -37,26 +41,25 @@ router.get("/:user_id", async (req, res) => {
       [req.params.user_id]
     );
 
-    // 🔥 FIX IMAGE PATH (IMPORTANT)
-    const data = result.rows.map(item => ({
+    const data = result.rows.map((item) => ({
       ...item,
       image: item.image?.startsWith("http")
         ? item.image
-        : `http://localhost:5000/uploads/${item.image}`
+        : `${BASE_URL}/uploads/${item.image}`,
     }));
 
     res.json(data);
   } catch (err) {
-    console.error("CART FETCH ERROR ❌", err);
-    res.status(500).json(err.message);
+    console.error("CART FETCH ERROR ❌", err.message);
+    res.status(500).json({ error: err.message });
   }
 });
 
-// 🔼 INCREASE / DECREASE QUANTITY
+// 🔼 UPDATE QUANTITY
 router.put("/update", async (req, res) => {
-  const { cart_id, quantity } = req.body;
-
   try {
+    const { cart_id, quantity } = req.body;
+
     await pool.query(
       "UPDATE cart SET quantity=$1 WHERE id=$2",
       [quantity, cart_id]
@@ -64,7 +67,8 @@ router.put("/update", async (req, res) => {
 
     res.json("Quantity updated");
   } catch (err) {
-    res.status(500).json(err.message);
+    console.error("CART UPDATE ERROR ❌", err.message);
+    res.status(500).json({ error: err.message });
   }
 });
 
@@ -74,23 +78,24 @@ router.delete("/:id", async (req, res) => {
     await pool.query("DELETE FROM cart WHERE id=$1", [req.params.id]);
     res.json("Item removed");
   } catch (err) {
-    res.status(500).json(err.message);
+    console.error("CART DELETE ERROR ❌", err.message);
+    res.status(500).json({ error: err.message });
   }
 });
-// 🔥 CLEAR CART AFTER PAYMENT 
-router.delete("/clear/:userId", async (req, res) => {
-  const { userId } = req.params;
 
+// 🔥 CLEAR CART
+router.delete("/clear/:userId", async (req, res) => {
   try {
     await pool.query(
       "DELETE FROM cart WHERE user_id = $1",
-      [userId]
+      [req.params.userId]
     );
 
-    res.status(200).json({ message: "Cart cleared ✅" });
+    res.json({ message: "Cart cleared ✅" });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to clear cart" });
+    console.error("CART CLEAR ERROR ❌", err.message);
+    res.status(500).json({ error: err.message });
   }
 });
+
 module.exports = router;
