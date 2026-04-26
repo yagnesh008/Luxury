@@ -79,50 +79,38 @@ export const CartProvider = ({ children }) => {
   };
 
   // ➕ Add to cart
-const addToCart = async (product) => {
-  const toastId = toast.loading("Adding to cart..."); // ⏳ loading toast
-
-  try {
-    const existing = cart.find(
-      item => item.product_id === product.product_id
-    );
-
-    if (existing) {
-      await API.put("/cart/update", {
-        cart_id: existing.id,
-        quantity: existing.quantity + 1
-      });
-
-      // ⚡ Instant UI update
-      setCart(prev =>
-        prev.map(item =>
-          item.id === existing.id
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
-        )
+  const addToCart = async (product) => {
+    try {
+      const existing = cart.find(
+        item => item.product_id === product.product_id
       );
 
-      toast.success("🔄 Quantity updated!", { id: toastId });
+      if (existing) {
+        await API.put("/cart/update", {
+          cart_id: existing.id,
+          quantity: existing.quantity + 1
+        });
 
-    } else {
-      await API.post("/cart/add", product);
+        // ⚡ Instant update
+        setCart(prev =>
+          prev.map(item =>
+            item.id === existing.id
+              ? { ...item, quantity: item.quantity + 1 }
+              : item
+          )
+        );
 
-      fetchCart(); // fallback sync
+      } else {
+        await API.post("/cart/add", product);
 
-      toast.success("🛒 Item added to cart!", { id: toastId });
+        fetchCart(); // fallback sync
+      }
+
+    } catch (err) {
+      console.error(err);
     }
+  };
 
-  } catch (err) {
-    console.error(err);
-
-    // 🔥 smarter error handling
-    if (err.response?.status === 409) {
-      toast("⚠️ Already in cart", { id: toastId });
-    } else {
-      toast.error("❌ Failed to add item", { id: toastId });
-    }
-  }
-};
   // 💰 Total
   const total = cart.reduce(
     (sum, item) => sum + item.price * item.quantity,
