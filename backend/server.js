@@ -2,6 +2,7 @@ require("dotenv").config();
 
 const express = require("express");
 const cors = require("cors");
+const pool = require("./config/db");
 
 const app = express();
 
@@ -38,7 +39,7 @@ app.use("/api/payment", require("./routes/paymentRoutes"));
 app.use("/api/products", require("./routes/productRoutes"));
 app.use("/api/address", require("./routes/addressRoutes"))
 
-console.log("RAZORPAY:", process.env.RAZORPAY_KEY_ID);
+
 
 
 // ✅ Error handler (VERY IMPORTANT)
