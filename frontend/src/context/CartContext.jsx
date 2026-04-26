@@ -7,16 +7,16 @@ const CartContext = createContext();
 export const CartProvider = ({ children }) => {
   const userId = localStorage.getItem("userId");
 
-  // ✅ Load from localStorage first (instant UI)
+  // ✅ Load from localStorage (instant UI)
   const [cart, setCart] = useState(() => {
     const saved = localStorage.getItem("cart");
     return saved ? JSON.parse(saved) : [];
   });
 
-  // ✅ Loading state (prevents false empty cart)
   const [loading, setLoading] = useState(true);
+  const [adding, setAdding] = useState(false); // 🚨 prevent duplicate clicks
 
-  // 🔥 Fetch cart from backend
+  // 🔥 Fetch cart
   const fetchCart = async () => {
     if (!userId) {
       setLoading(false);
@@ -25,14 +25,12 @@ export const CartProvider = ({ children }) => {
 
     try {
       const res = await API.get(`/cart/${userId}`);
-
-      if (res.data) {
-        setCart(res.data);
-      }
+      setCart(res.data || []);
     } catch (err) {
-      console.error(err);
+      console.error("FETCH CART ERROR ❌", err);
+      toast.error("Failed to load cart");
     } finally {
-      setLoading(false); // ✅ VERY IMPORTANT
+      setLoading(false);
     }
   };
 
@@ -40,84 +38,128 @@ export const CartProvider = ({ children }) => {
     fetchCart();
   }, [userId]);
 
-  // ✅ Save to localStorage whenever cart changes
+  // 💾 Sync localStorage
   useEffect(() => {
     localStorage.setItem("cart", JSON.stringify(cart));
   }, [cart]);
 
-  // 🔼 Update quantity
-  const updateQty = async (id, qty) => {
-    if (qty < 1) return;
-
-    try {
-      await API.put("/cart/update", {
-        cart_id: id,
-        quantity: qty
-      });
-
-      // ⚡ Instant UI update
-      setCart(prev =>
-        prev.map(item =>
-          item.id === id ? { ...item, quantity: qty } : item
-        )
-      );
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  // ❌ Remove item
-  const removeItem = async (id) => {
-    try {
-      await API.delete(`/cart/${id}`);
-
-      // ⚡ Instant UI update
-      setCart(prev => prev.filter(item => item.id !== id));
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  // ➕ Add to cart
+  // ➕ ADD TO CART
   const addToCart = async (product) => {
+    if (!userId) {
+      toast.error("Please login first");
+      return;
+    }
+
+    if (adding) return; // 🚨 block multiple clicks
+
     try {
+      setAdding(true);
+
       const existing = cart.find(
-        item => item.product_id === product.product_id
+        (item) => item.product_id === product.id
       );
 
       if (existing) {
+        // 🔼 Update quantity
         await API.put("/cart/update", {
           cart_id: existing.id,
-          quantity: existing.quantity + 1
+          quantity: existing.quantity + 1,
         });
 
-        // ⚡ Instant update
-        setCart(prev =>
-          prev.map(item =>
+        // ⚡ Instant UI update
+        setCart((prev) =>
+          prev.map((item) =>
             item.id === existing.id
               ? { ...item, quantity: item.quantity + 1 }
               : item
           )
         );
 
-      } else {
-        await API.post("/cart/add", product);
+        toast.success("Quantity updated 🛒");
 
-        fetchCart(); // fallback sync
+      } else {
+        // 🆕 Add new item
+        await API.post("/cart/add", {
+          user_id: userId,
+          product_id: product.id,
+          quantity: 1,
+        });
+
+        await fetchCart(); // sync with DB
+
+        toast.success("Added to cart 💎");
       }
 
     } catch (err) {
-      console.error(err);
+      console.error("ADD ERROR ❌", err);
+
+      if (err.response?.data?.error?.includes("duplicate")) {
+        toast("Already in cart 🛒");
+      } else {
+        toast.error("Something went wrong ❌");
+      }
+
+    } finally {
+      setAdding(false);
     }
   };
 
-  // 💰 Total
+  // 🔼 UPDATE QTY
+  const updateQty = async (id, qty) => {
+    if (qty < 1) return;
+
+    try {
+      await API.put("/cart/update", {
+        cart_id: id,
+        quantity: qty,
+      });
+
+      setCart((prev) =>
+        prev.map((item) =>
+          item.id === id ? { ...item, quantity: qty } : item
+        )
+      );
+
+    } catch (err) {
+      console.error("UPDATE ERROR ❌", err);
+      toast.error("Failed to update quantity");
+    }
+  };
+
+  // ❌ REMOVE ITEM
+  const removeItem = async (id) => {
+    try {
+      await API.delete(`/cart/${id}`);
+
+      setCart((prev) => prev.filter((item) => item.id !== id));
+
+      toast.success("Item removed ❌");
+
+    } catch (err) {
+      console.error("REMOVE ERROR ❌", err);
+      toast.error("Failed to remove item");
+    }
+  };
+
+  // 🧹 CLEAR CART
+  const clearCart = async () => {
+    try {
+      await API.delete(`/cart/clear/${userId}`);
+      setCart([]);
+      toast.success("Cart cleared 🧹");
+    } catch (err) {
+      console.error("CLEAR ERROR ❌", err);
+      toast.error("Failed to clear cart");
+    }
+  };
+
+  // 💰 TOTAL
   const total = cart.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0
   );
 
-  // 🔢 Count
+  // 🔢 COUNT
   const count = cart.reduce(
     (sum, item) => sum + item.quantity,
     0
@@ -129,10 +171,13 @@ export const CartProvider = ({ children }) => {
         cart,
         total,
         count,
-        loading,   // ✅ important
+        loading,
+        adding, // 👈 use this to disable button
+        addToCart,
         updateQty,
         removeItem,
-        addToCart
+        clearCart,
+        fetchCart,
       }}
     >
       {children}
@@ -140,5 +185,5 @@ export const CartProvider = ({ children }) => {
   );
 };
 
-// ✅ Custom hook
+// ✅ Hook
 export const useCart = () => useContext(CartContext);

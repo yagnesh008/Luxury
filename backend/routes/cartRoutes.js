@@ -1,36 +1,40 @@
 const router = require("express").Router();
 const pool = require("../config/db");
 
-// ✅ BASE URL (for images)
 const BASE_URL =
   process.env.BASE_URL || "https://luxury-1.onrender.com";
+
 
 // ✅ ADD TO CART
 router.post("/add", async (req, res) => {
   try {
-    const { user_id, product_id, quantity } = req.body;
+    const { user_id, product_id, quantity = 1 } = req.body;
+
+    if (!user_id || !product_id) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
 
     await pool.query(
-        `INSERT INTO cart (user_id, product_id, quantity)
-          VALUES ($1, $2, $3)
-          ON CONFLICT (user_id, product_id)
-          DO UPDATE SET quantity = cart.quantity + EXCLUDED.quantity`,
+      `INSERT INTO cart (user_id, product_id, quantity)
+       VALUES ($1, $2, $3)
+       ON CONFLICT (user_id, product_id)
+       DO UPDATE SET quantity = cart.quantity + EXCLUDED.quantity`,
       [user_id, product_id, quantity]
     );
 
-    res.json("Added to cart 💎");
+    res.json({ message: "Added to cart 💎" });
   } catch (err) {
     console.error("CART ADD ERROR ❌", err.message);
     res.status(500).json({ error: err.message });
   }
 });
 
+
 // ✅ GET CART
 router.get("/:user_id", async (req, res) => {
   try {
     const result = await pool.query(
-      `
-      SELECT 
+      `SELECT 
         c.id,
         c.quantity,
         p.id AS product_id,
@@ -39,8 +43,7 @@ router.get("/:user_id", async (req, res) => {
         p.image
       FROM cart c
       JOIN products p ON c.product_id = p.id
-      WHERE c.user_id = $1
-      `,
+      WHERE c.user_id = $1`,
       [req.params.user_id]
     );
 
@@ -58,35 +61,30 @@ router.get("/:user_id", async (req, res) => {
   }
 });
 
+
 // 🔼 UPDATE QUANTITY
 router.put("/update", async (req, res) => {
   try {
     const { cart_id, quantity } = req.body;
+
+    if (!cart_id || quantity < 1) {
+      return res.status(400).json({ error: "Invalid quantity" });
+    }
 
     await pool.query(
       "UPDATE cart SET quantity=$1 WHERE id=$2",
       [quantity, cart_id]
     );
 
-    res.json("Quantity updated");
+    res.json({ message: "Quantity updated" });
   } catch (err) {
     console.error("CART UPDATE ERROR ❌", err.message);
     res.status(500).json({ error: err.message });
   }
 });
 
-// ❌ REMOVE ITEM
-router.delete("/:id", async (req, res) => {
-  try {
-    await pool.query("DELETE FROM cart WHERE id=$1", [req.params.id]);
-    res.json("Item removed");
-  } catch (err) {
-    console.error("CART DELETE ERROR ❌", err.message);
-    res.status(500).json({ error: err.message });
-  }
-});
 
-// 🔥 CLEAR CART
+// 🔥 CLEAR CART (move ABOVE /:id)
 router.delete("/clear/:userId", async (req, res) => {
   try {
     await pool.query(
@@ -97,6 +95,18 @@ router.delete("/clear/:userId", async (req, res) => {
     res.json({ message: "Cart cleared ✅" });
   } catch (err) {
     console.error("CART CLEAR ERROR ❌", err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
+// ❌ REMOVE ITEM
+router.delete("/:id", async (req, res) => {
+  try {
+    await pool.query("DELETE FROM cart WHERE id=$1", [req.params.id]);
+    res.json({ message: "Item removed" });
+  } catch (err) {
+    console.error("CART DELETE ERROR ❌", err.message);
     res.status(500).json({ error: err.message });
   }
 });
