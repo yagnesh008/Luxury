@@ -11,7 +11,10 @@ router.post("/add", async (req, res) => {
     const { user_id, product_id, quantity } = req.body;
 
     await pool.query(
-      "INSERT INTO cart (user_id, product_id, quantity) VALUES ($1,$2,$3)",
+        `INSERT INTO cart (user_id, product_id, quantity)
+          VALUES ($1, $2, $3)
+          ON CONFLICT (user_id, product_id)
+          DO UPDATE SET quantity = cart.quantity + EXCLUDED.quantity`,
       [user_id, product_id, quantity]
     );
 
