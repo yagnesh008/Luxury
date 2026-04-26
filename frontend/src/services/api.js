@@ -1,9 +1,10 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL:
-    import.meta.env.VITE_API_URL ||
-    "https://luxury-1.onrender.com/api",
+  baseURL: "https://luxury-1.onrender.com/api",
+  headers: {
+    "Content-Type": "application/json",
+  },
   timeout: 30000,
 });
 

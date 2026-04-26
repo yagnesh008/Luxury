@@ -19,7 +19,10 @@ export default function Login() {
       setLoading(true);
       setError("");
 
-      const res = await API.post("/auth/login", form);
+      const res = await API.post("/auth/login", {
+        email: form.email,
+        password: form.password,
+      });
 
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("role", res.data.role);
@@ -28,7 +31,11 @@ export default function Login() {
 
       navigate("/productList");
     } catch (err) {
-      setError(err.response?.data || "Login failed");
+      console.error("LOGIN ERROR:", err);
+
+      setError(
+        err.response?.data || "Login failed. Please try again."
+      );
     } finally {
       setLoading(false);
     }
