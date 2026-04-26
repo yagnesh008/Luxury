@@ -8,23 +8,14 @@ const BASE_URL =
 // ✅ ADD TO CART
 router.post("/add", async (req, res) => {
   try {
-    const { userId, productId, quantity = 1 } = req.body;
+    const { user_id, product_id, quantity } = req.body;
 
-    const existing = await pool.query(
-      "SELECT * FROM cart WHERE user_id=$1 AND product_id=$2",
-      [userId, productId]
-    );
-
-    if (existing.rows.length > 0) {
-      return res.status(400).json({
-        error: "Item already in cart",
-      });
-    }
-
-    // ✅ Insert only if not exists
     await pool.query(
-      "INSERT INTO cart (user_id, product_id, quantity) VALUES ($1,$2,$3)",
-      [userId, productId, quantity]
+        `INSERT INTO cart (user_id, product_id, quantity)
+          VALUES ($1, $2, $3)
+          ON CONFLICT (user_id, product_id)
+          DO UPDATE SET quantity = cart.quantity + EXCLUDED.quantity`,
+      [user_id, product_id, quantity]
     );
 
     res.json("Added to cart 💎");
