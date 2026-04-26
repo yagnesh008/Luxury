@@ -246,11 +246,8 @@ export default function ProductList() {
                         className="btns"
                         onClick={() => {
                           addToCart({
-                            user_id: localStorage.getItem("userId"),
-                            product_id: p.id,
-                            quantity: 1,
+                            id: p.id,
                           });
-                          toast.success("Added to cart");
                         }}
                       >
                         Add to Cart
