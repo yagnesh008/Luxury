@@ -223,11 +223,11 @@ export default function ProductList() {
                     <p>{formatShortPrice(p.price)}</p>
 
                     {isInCart ? (
-                      <button onClick={() => navigate("/cart")}>
+                      <button className="pay-btn" onClick={() => navigate("/cart")}>
                         Go to Cart
                       </button>
                     ) : (
-                      <button onClick={() => addToCart(p)}>
+                      <button className="pay-btn" onClick={() => addToCart(p)}>
                         Add to Cart
                       </button>
                     )}
