@@ -39,7 +39,15 @@ app.use("/api/payment", require("./routes/paymentRoutes"));
 app.use("/api/products", require("./routes/productRoutes"));
 app.use("/api/address", require("./routes/addressRoutes"))
 
-
+app.get("/test-db", async (req, res) => {
+  try {
+    const result = await pool.query("SELECT NOW()");
+    res.json(result.rows);
+  } catch (err) {
+    console.error("DB TEST ERROR:", err);
+    res.status(500).json(err.message);
+  }
+});
 
 
 // ✅ Error handler (VERY IMPORTANT)
