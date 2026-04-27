@@ -156,8 +156,15 @@ useEffect(() => {
   // 🧹 CLEAR CART
   const clearCart = async () => {
     try {
-      await API.delete(`/cart/clear/${userId}`);
+      const uid = localStorage.getItem("userId"); // ✅ fresh
+
+      if (!uid) return;
+
+      await API.delete(`/cart/clear/${uid}`);
+
       setCart([]);
+      localStorage.removeItem("cart"); // ✅ clear cache
+
       toast.success("Cart cleared 🧹");
     } catch (err) {
       console.error("CLEAR ERROR ❌", err);

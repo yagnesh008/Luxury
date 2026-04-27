@@ -1,48 +1,36 @@
-import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
-import API from "../services/api";
-
 
 export default function Success() {
   const navigate = useNavigate();
-    const { setCart } = useCart(); 
+  const { clearCart } = useCart();
+
   useEffect(() => {
-    const clearAfterPayment = async () => {
-      const userId = localStorage.getItem("userId");
-
-      console.log("CLEARING CART FOR:", userId); 
-
-      if (!userId) return;
-
+    const handleSuccess = async () => {
       try {
-        // 🔥 1. Clear backend
-        await API.delete(`/cart/clear/${userId}`);
-
-        // 🔥 2. Clear frontend state
-        setCart([]);
-
-        // 🔥 3. Clear localStorage
-        localStorage.removeItem("cart");
-
-        console.log("CART CLEARED ✅");
-
+        await clearCart(); // ✅ clears backend + frontend + localStorage
+        console.log("Cart cleared after payment ✅");
       } catch (err) {
-        console.error("CLEAR CART ERROR ❌", err);
+        console.error("Error clearing cart ❌", err);
       }
     };
 
-    clearAfterPayment();
+    handleSuccess();
   }, []);
+
   return (
     <div className="success-page">
       <div className="success-box">
         <h1>🎉 Payment Successful</h1>
         <p>Your order has been placed successfully.</p>
 
-        <h2 onClick={() => navigate("/products")}>
-          <button className="btns">Continue Shopping</button>
-        </h2>
+        <button
+          className="btns"
+          onClick={() => navigate("/productList")}
+        >
+          Continue Shopping
+        </button>
       </div>
     </div>
   );
