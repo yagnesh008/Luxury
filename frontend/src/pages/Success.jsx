@@ -1,6 +1,9 @@
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
+
+
 export default function Success() {
+  const navigate = useNavigate();
   return (
     <div className="success-page">
       <div className="success-box">
