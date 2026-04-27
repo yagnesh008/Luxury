@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 export default function Success() {
   return (
     <div className="success-page">
@@ -6,9 +7,9 @@ export default function Success() {
         <h1>🎉 Payment Successful</h1>
         <p>Your order has been placed successfully.</p>
 
-        <a href="/productList">
+        <h2 onClick={() => navigate("/products")}>
           <button className="btns">Continue Shopping</button>
-        </a>
+        </h2>
       </div>
     </div>
   );
