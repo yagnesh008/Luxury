@@ -4,7 +4,7 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const pool = require("./config/db");
-const cartRoutes = require("./routes/cart");
+const cartRoutes = require("./routes/cartRoutes");
 
 const app = express();
 
