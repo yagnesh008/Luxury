@@ -5,7 +5,19 @@ import toast from "react-hot-toast";
 const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
-  const userId = localStorage.getItem("userId");
+  const [userId, setUserId] = useState(
+  localStorage.getItem("userId")
+);
+useEffect(() => {
+  const handleStorageChange = () => {
+    setUserId(localStorage.getItem("userId"));
+  };
+
+  window.addEventListener("storage", handleStorageChange);
+
+  return () =>
+    window.removeEventListener("storage", handleStorageChange);
+}, []);
 
   // ✅ Load from localStorage (instant UI)
   const [cart, setCart] = useState(() => {
