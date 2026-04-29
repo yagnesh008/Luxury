@@ -42,6 +42,7 @@ export default function Register() {
           value={form.name}
           onChange={(e) => setForm({ ...form, name: e.target.value })}
           className="auth-input"
+          
         />
 
         <input
@@ -50,6 +51,7 @@ export default function Register() {
           value={form.email}
           onChange={(e) => setForm({ ...form, email: e.target.value })}
           className="auth-input"
+          
         />
 
         <input
@@ -58,6 +60,7 @@ export default function Register() {
           value={form.password}
           onChange={(e) => setForm({ ...form, password: e.target.value })}
           className="auth-input"
+          
         />
 
         <button className="btns auth-submit" onClick={handleSubmit}>
