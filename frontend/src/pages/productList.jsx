@@ -181,8 +181,10 @@ export default function ProductList() {
               </div>
 
               <div className="drawer-footer">
-                <button onClick={clearFilters}>Clear Filters</button>
-                <button onClick={() => setShowFilters(false)}>
+                <button className="btns" onClick={clearFilters}>
+                  Clear Filters
+                </button>
+                <button className="btns" onClick={() => setShowFilters(false)}>
                   View {filtered.length}
                 </button>
               </div>
